@@ -1,1 +1,27 @@
+import numpy as np
+import scipy as sp
 
+
+class fittingTemperature:
+    C0 = 2*np.pi*(6.63E-34)*(3E+8)**2                                    # Overall coefficient
+    C1 = (6.63E-34)*(3E+8)/(1.3806E-23)                                  # T coefficient (Exponential)
+    n = (1100 - 360 + 1)                                                 # MPCD-9800 데이터 갯수
+    L1 = 360E-9
+    L2 = 1100E-9
+    
+    def uniform(measureRegion, measureData, initialPoint):
+        x = measureRegion; y = measureData
+        fittingCurve = lambda T, x : C0/(pow(x,5)*(np.exp(C1/(T*x))-1))
+        uncertainty = lambda T, x, y : np.sqrt(((np.square(fittingCurve(T,x)-y)).sum())/n)
+        fittedTemperature = sp.optimize.minimize(uncertainty, initialPoint, args = (x, y)).x
+        stddev = sp.optimize.minimize(uncertainty, initialPoint, args =(x,y)).fun
+        return [fittedTemperature, stddev]
+    
+    def weight(measureRegion1, measureRegion2, measureData1, measureData2, weightPower, initialPoint):  # 1:전체(weight포함), 2:weight
+        x1 = measureRegion1; x2 = measureRegion2; y1 = measureData1; y2 = measureData2;
+        fittingCurve = lambda T, x : C0/(pow(x,5)*(np.exp(C1/(T*x))-1))
+        uncertainty2 = lambda T, x1, y1 : np.sqrt(((((np.square(fittingCurve(T,x1)-y1)).sum()) +
+                                                            (np.square((weightPower-1)*(fittingCurve(T,x2)-y2)).sum()))/(n+len(x2)*(weightPower-1))))
+        fittedTemperature2 = sp.optimize.minimize(uncertainty2, initialPoint, args = (x1, y1)).x
+        stddev = sp.optimize.minimize(uncertainty2, initialPoint, args =(x1,y1)).fun
+        return [fittedTemperature2, stddev]
