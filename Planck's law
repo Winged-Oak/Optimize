@@ -3,7 +3,7 @@ import scipy as sp
 
 
 class fittingTemperature:
-    C0 = 2*np.pi*(6.63E-34)*(3E+8)**2                                    # Overall coefficient
+    C0 = 2*(6.63E-34)*(3E+8)**2                                    # Overall coefficient
     C1 = (6.63E-34)*(3E+8)/(1.3806E-23)                                  # T coefficient (Exponential)
     n = (1100 - 360 + 1)                                                 # MPCD-9800 데이터 갯수
     L1 = 360E-9
